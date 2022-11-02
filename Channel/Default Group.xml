@@ -1,0 +1,1132 @@
+<channelGroup version="4.1.1">
+  <id>Default Group</id>
+  <name>[Default Group]</name>
+  <description>Channels not part of a group will appear here.</description>
+  <channels>
+    <channel version="4.1.1">
+      <id>57ebab22-1f99-4547-9a10-0b2f053f6a7e</id>
+      <nextMetaDataId>2</nextMetaDataId>
+      <name>hl7 to file writer</name>
+      <description></description>
+      <revision>35</revision>
+      <sourceConnector version="4.1.1">
+        <metaDataId>0</metaDataId>
+        <name>sourceConnector</name>
+        <properties class="com.mirth.connect.connectors.vm.VmReceiverProperties" version="4.1.1">
+          <pluginProperties/>
+          <sourceConnectorProperties version="4.1.1">
+            <responseVariable>Auto-generate (After source transformer)</responseVariable>
+            <respondAfterProcessing>true</respondAfterProcessing>
+            <processBatch>false</processBatch>
+            <firstResponse>false</firstResponse>
+            <processingThreads>1</processingThreads>
+            <resourceIds class="linked-hash-map">
+              <entry>
+                <string>Default Resource</string>
+                <string>[Default Resource]</string>
+              </entry>
+            </resourceIds>
+            <queueBufferSize>1000</queueBufferSize>
+          </sourceConnectorProperties>
+        </properties>
+        <transformer version="4.1.1">
+          <elements>
+            <com.mirth.connect.plugins.javascriptstep.JavaScriptStep version="4.1.1">
+              <name>Looping through PID 3 and logging values</name>
+              <sequenceNumber>0</sequenceNumber>
+              <enabled>true</enabled>
+              <script>for each(pid3 in msg[&apos;PID&apos;][&apos;PID.3&apos;]){
+	logger.info (&apos;All PID3 values&apos;+ pid3);
+};</script>
+            </com.mirth.connect.plugins.javascriptstep.JavaScriptStep>
+            <com.mirth.connect.plugins.javascriptstep.JavaScriptStep version="4.1.1">
+              <name>Cleaning Message and Standardizing Creating final message</name>
+              <sequenceNumber>1</sequenceNumber>
+              <enabled>true</enabled>
+              <script>//Finalising MSH segment
+tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.1&apos;]=msg[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.1&apos;].toString();
+tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.2&apos;]=msg[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.2&apos;].toString();
+tmp[&apos;MSH&apos;][&apos;MSH.10&apos;][&apos;MSH.10.1&apos;]=msg[&apos;MSH&apos;][&apos;MSH.10&apos;][&apos;MSH.10.1&apos;].toString();
+
+
+//Finalising PID Segment
+tmp[&apos;PID&apos;][&apos;PID.3&apos;][0][&apos;PID.3.1&apos;]=msg[&apos;PID&apos;][&apos;PID.3&apos;][0][&apos;PID.3.1&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.3&apos;][0][&apos;PID.3.2&apos;]=&apos;&apos;;
+tmp[&apos;PID&apos;][&apos;PID.3&apos;][0][&apos;PID.3.3&apos;]=&apos;&apos;;
+tmp[&apos;PID&apos;][&apos;PID.3&apos;][0][&apos;PID.3.4&apos;]=&apos;&apos;;
+tmp[&apos;PID&apos;][&apos;PID.3&apos;][0][&apos;PID.3.5&apos;]=&apos;&apos;;
+tmp[&apos;PID&apos;][&apos;PID.3&apos;][0][&apos;PID.3.6&apos;]=&apos;&apos;;
+tmp[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.1&apos;]=msg[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.1&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.2&apos;]=msg[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.2&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.3&apos;]=msg[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.3&apos;].toString();
+
+//Removing / from DOB 
+
+var date=msg[&apos;PID&apos;][&apos;PID.7&apos;][&apos;PID.7.1&apos;].toString();
+date = DateUtil.convertDate(&quot;MM/dd/yyyy&quot;, &quot;MMddyyyy&quot;, date);
+logger.info(date);
+tmp[&apos;PID&apos;][&apos;PID.7&apos;][&apos;PID.7.1&apos;]=date;
+
+/*Mapping patient SEx
+Male=M
+Female=F
+Unknow-U*/
+
+/*if (msg[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;].toString()==&apos;Male&apos;){
+	tmp[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;].toString()=&apos;M&apos;;
+}
+else if (msg[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;].toString()==&apos;Female&apos;){
+	tmp[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;].toString()=&apos;F&apos;;
+}
+else  if (msg[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;].toString()==&apos;Unknown&apos;){
+	tmp[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;].toString()=&apos;U&apos;;*/
+
+switch (msg[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;].toString()){
+	case &quot;Male&quot;:
+				tmp[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;]=&apos;M&apos;;
+				break;
+	case &quot;Female&quot;:
+				tmp[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;]=&apos;F&apos;;
+				break;
+	case &quot;Unknow&quot;:
+				tmp[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;]=&apos;U&apos;;
+				break;
+				
+}
+tmp[&apos;PID&apos;][&apos;PID.10&apos;][&apos;PID.10.1&apos;]=msg[&apos;PID&apos;][&apos;PID.10&apos;][&apos;PID.10.1&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.1&apos;]=msg[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.1&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.2&apos;]=msg[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.2&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.3&apos;]=msg[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.3&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.4&apos;]=msg[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.4&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.5&apos;]=msg[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.5&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.12&apos;][&apos;PID.12.1&apos;]=&apos;&apos;;
+
+//Removing - from phone number
+var number=msg[&apos;PID&apos;][&apos;PID.13&apos;][&apos;PID.13.1&apos;].toString();
+//var newnum=number.replace(/-/g,&quot;&quot;);
+
+tmp[&apos;PID&apos;][&apos;PID.13&apos;][&apos;PID.13.1&apos;]=cleanphone(number);
+tmp[&apos;PID&apos;][&apos;PID.14&apos;][&apos;PID.14.1&apos;]=&apos;&apos;;
+
+// Finalising PV1 segment
+
+/*Mapping Patient CLass 
+Inpatient=I
+Outpatient=O
+*/
+
+switch (msg[&apos;PV1&apos;][&apos;PV1.2&apos;][&apos;PV1.2.1&apos;].toString()){
+	case &quot;Inpatient&quot;:
+				tmp[&apos;PV1&apos;][&apos;PV1.2&apos;][&apos;PV1.2.1&apos;]=&apos;I&apos;;
+				break;
+	case &quot;Outpatient&quot;:
+				tmp[&apos;PV1&apos;][&apos;PV1.2&apos;][&apos;PV1.2.1&apos;]=&apos;O&apos;;
+				break;
+}</script>
+            </com.mirth.connect.plugins.javascriptstep.JavaScriptStep>
+          </elements>
+          <inboundTemplate encoding="base64">TVNIfF5+XCZ8ZUNMaW5pY2Fsd29ya3N8ZWN3fEVwaWN8RXBpY3wyMDIyMTEwMTAxMzR8U0VDVVJJVFl8QURUXkEwOHwyMDIyMTEwMTAxMzQ1MDc4fFR8Mi4zLjENUElEfDF8fDc4XjVeTTExXkFEVDFeTVJeTUNNfjEyMzQ1Njc4OV5eXlVTU1NBXlNTfDc4fFRlc3ReVGVzdDJeXnx8MDgvMjEvMTk4OXxGZW1hbGV8fEhpc3BhbmljfGxhbmU0XkxhbmUzXkRhbGxhc15UWF4xMjM0NXxHTHw0MjQtMzQ1LTQzMzJ8KDk5OSk5OTk/MzMzM3x8TWFycmllZHx8Njc3MzQ4XjJeTTEwXkFEVDFeQU5eQXwxMjM0NTY3ODl8OTg3NjU0Xk5DDVBWMXwxfElucGF0aWVudHwyMDAwXjIwMTJeMDF8fHx8MTIzNDU2Nzg5MF50ZXN0XnRlc3QxXnx8fHx8fHxOZXd8DVpJTHwxfHx8fFJlYWRpbmcgRmxhdCBmaWxlDQo=</inboundTemplate>
+          <outboundTemplate encoding="base64">TVNIfF5+XCZ8ZUNMaW5pY2Fsd29ya3N8ZWN3fEVwaWN8RXBpY3wyMDIyMTEwMTAxMzR8U0VDVVJJVFl8QURUXkEwOHwyMDIyMTEwMTAxMzQ1MDc4fFR8Mi4zLjENUElEfDF8fDc4XjVeTTExXkFEVDFeTVJeTUNNfjEyMzQ1Njc4OV5eXlVTU1NBXlNTfDc4fFRlc3ReVGVzdDJeXnx8MDgvMjEvMTk4OXxGZW1hbGV8fEhpc3BhbmljfGxhbmU0XkxhbmUzXkRhbGxhc15UWF4xMjM0NXxHTHw0MjQtMzQ1LTQzMzJ8KDk5OSk5OTk/MzMzM3x8TWFycmllZHx8Njc3MzQ4XjJeTTEwXkFEVDFeQU5eQXwxMjM0NTY3ODl8OTg3NjU0Xk5DDVBWMXwxfElucGF0aWVudHwyMDAwXjIwMTJeMDF8fHx8MTIzNDU2Nzg5MF50ZXN0XnRlc3QxXnx8fHx8fHxOZXd8DVpJTHwxfHx8fFJlYWRpbmcgRmxhdCBmaWxlDQo=</outboundTemplate>
+          <inboundDataType>HL7V2</inboundDataType>
+          <outboundDataType>HL7V2</outboundDataType>
+          <inboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+            <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+              <handleRepetitions>true</handleRepetitions>
+              <handleSubcomponents>true</handleSubcomponents>
+              <useStrictParser>false</useStrictParser>
+              <useStrictValidation>false</useStrictValidation>
+              <stripNamespaces>false</stripNamespaces>
+              <segmentDelimiter>\r</segmentDelimiter>
+              <convertLineBreaks>true</convertLineBreaks>
+            </serializationProperties>
+            <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+              <useStrictParser>false</useStrictParser>
+              <useStrictValidation>false</useStrictValidation>
+              <segmentDelimiter>\r</segmentDelimiter>
+            </deserializationProperties>
+            <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+              <splitType>MSH_Segment</splitType>
+              <batchScript></batchScript>
+            </batchProperties>
+            <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+              <segmentDelimiter>\r</segmentDelimiter>
+              <successfulACKCode>AA</successfulACKCode>
+              <successfulACKMessage></successfulACKMessage>
+              <errorACKCode>AE</errorACKCode>
+              <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+              <rejectedACKCode>AR</rejectedACKCode>
+              <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+              <msh15ACKAccept>false</msh15ACKAccept>
+              <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+            </responseGenerationProperties>
+            <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+              <successfulACKCode>AA,CA</successfulACKCode>
+              <errorACKCode>AE,CE</errorACKCode>
+              <rejectedACKCode>AR,CR</rejectedACKCode>
+              <validateMessageControlId>true</validateMessageControlId>
+              <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+              <originalIdMapVariable></originalIdMapVariable>
+            </responseValidationProperties>
+          </inboundProperties>
+          <outboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+            <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+              <handleRepetitions>true</handleRepetitions>
+              <handleSubcomponents>true</handleSubcomponents>
+              <useStrictParser>false</useStrictParser>
+              <useStrictValidation>false</useStrictValidation>
+              <stripNamespaces>false</stripNamespaces>
+              <segmentDelimiter>\r</segmentDelimiter>
+              <convertLineBreaks>true</convertLineBreaks>
+            </serializationProperties>
+            <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+              <useStrictParser>false</useStrictParser>
+              <useStrictValidation>false</useStrictValidation>
+              <segmentDelimiter>\r</segmentDelimiter>
+            </deserializationProperties>
+            <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+              <splitType>MSH_Segment</splitType>
+              <batchScript></batchScript>
+            </batchProperties>
+            <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+              <segmentDelimiter>\r</segmentDelimiter>
+              <successfulACKCode>AA</successfulACKCode>
+              <successfulACKMessage></successfulACKMessage>
+              <errorACKCode>AE</errorACKCode>
+              <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+              <rejectedACKCode>AR</rejectedACKCode>
+              <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+              <msh15ACKAccept>false</msh15ACKAccept>
+              <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+            </responseGenerationProperties>
+            <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+              <successfulACKCode>AA,CA</successfulACKCode>
+              <errorACKCode>AE,CE</errorACKCode>
+              <rejectedACKCode>AR,CR</rejectedACKCode>
+              <validateMessageControlId>true</validateMessageControlId>
+              <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+              <originalIdMapVariable></originalIdMapVariable>
+            </responseValidationProperties>
+          </outboundProperties>
+        </transformer>
+        <filter version="4.1.1">
+          <elements>
+            <com.mirth.connect.plugins.rulebuilder.RuleBuilderRule version="4.1.1">
+              <name>Accept message if &quot;msg[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.2&apos;].toString()&quot; equals &apos;A01&apos;</name>
+              <sequenceNumber>0</sequenceNumber>
+              <enabled>true</enabled>
+              <field>msg[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.2&apos;].toString()</field>
+              <condition>EQUALS</condition>
+              <values>
+                <string>&apos;A01&apos;</string>
+              </values>
+            </com.mirth.connect.plugins.rulebuilder.RuleBuilderRule>
+          </elements>
+        </filter>
+        <transportName>Channel Reader</transportName>
+        <mode>SOURCE</mode>
+        <enabled>true</enabled>
+        <waitForPrevious>true</waitForPrevious>
+      </sourceConnector>
+      <destinationConnectors>
+        <connector version="4.1.1">
+          <metaDataId>1</metaDataId>
+          <name>destination</name>
+          <properties class="com.mirth.connect.connectors.file.FileDispatcherProperties" version="4.1.1">
+            <pluginProperties/>
+            <destinationConnectorProperties version="4.1.1">
+              <queueEnabled>false</queueEnabled>
+              <sendFirst>false</sendFirst>
+              <retryIntervalMillis>10000</retryIntervalMillis>
+              <regenerateTemplate>false</regenerateTemplate>
+              <retryCount>0</retryCount>
+              <rotate>false</rotate>
+              <includeFilterTransformer>false</includeFilterTransformer>
+              <threadCount>1</threadCount>
+              <threadAssignmentVariable></threadAssignmentVariable>
+              <validateResponse>false</validateResponse>
+              <resourceIds class="linked-hash-map">
+                <entry>
+                  <string>Default Resource</string>
+                  <string>[Default Resource]</string>
+                </entry>
+              </resourceIds>
+              <queueBufferSize>1000</queueBufferSize>
+              <reattachAttachments>true</reattachAttachments>
+            </destinationConnectorProperties>
+            <scheme>FILE</scheme>
+            <host>C:/mirth assesement/Output/</host>
+            <outputPattern>processedmessage</outputPattern>
+            <anonymous>true</anonymous>
+            <username>anonymous</username>
+            <password>anonymous</password>
+            <timeout>10000</timeout>
+            <keepConnectionOpen>true</keepConnectionOpen>
+            <maxIdleTime>0</maxIdleTime>
+            <secure>true</secure>
+            <passive>true</passive>
+            <validateConnection>true</validateConnection>
+            <outputAppend>true</outputAppend>
+            <errorOnExists>false</errorOnExists>
+            <temporary>false</temporary>
+            <binary>false</binary>
+            <charsetEncoding>DEFAULT_ENCODING</charsetEncoding>
+            <template>${message.encodedData}</template>
+          </properties>
+          <transformer version="4.1.1">
+            <elements/>
+            <inboundDataType>HL7V2</inboundDataType>
+            <outboundDataType>HL7V2</outboundDataType>
+            <inboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+              <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+                <handleRepetitions>true</handleRepetitions>
+                <handleSubcomponents>true</handleSubcomponents>
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <stripNamespaces>false</stripNamespaces>
+                <segmentDelimiter>\r</segmentDelimiter>
+                <convertLineBreaks>true</convertLineBreaks>
+              </serializationProperties>
+              <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <segmentDelimiter>\r</segmentDelimiter>
+              </deserializationProperties>
+              <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+                <splitType>MSH_Segment</splitType>
+                <batchScript></batchScript>
+              </batchProperties>
+              <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+                <segmentDelimiter>\r</segmentDelimiter>
+                <successfulACKCode>AA</successfulACKCode>
+                <successfulACKMessage></successfulACKMessage>
+                <errorACKCode>AE</errorACKCode>
+                <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+                <rejectedACKCode>AR</rejectedACKCode>
+                <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+                <msh15ACKAccept>false</msh15ACKAccept>
+                <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+              </responseGenerationProperties>
+              <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+                <successfulACKCode>AA,CA</successfulACKCode>
+                <errorACKCode>AE,CE</errorACKCode>
+                <rejectedACKCode>AR,CR</rejectedACKCode>
+                <validateMessageControlId>true</validateMessageControlId>
+                <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+                <originalIdMapVariable></originalIdMapVariable>
+              </responseValidationProperties>
+            </inboundProperties>
+            <outboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+              <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+                <handleRepetitions>true</handleRepetitions>
+                <handleSubcomponents>true</handleSubcomponents>
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <stripNamespaces>false</stripNamespaces>
+                <segmentDelimiter>\r</segmentDelimiter>
+                <convertLineBreaks>true</convertLineBreaks>
+              </serializationProperties>
+              <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <segmentDelimiter>\r</segmentDelimiter>
+              </deserializationProperties>
+              <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+                <splitType>MSH_Segment</splitType>
+                <batchScript></batchScript>
+              </batchProperties>
+              <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+                <segmentDelimiter>\r</segmentDelimiter>
+                <successfulACKCode>AA</successfulACKCode>
+                <successfulACKMessage></successfulACKMessage>
+                <errorACKCode>AE</errorACKCode>
+                <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+                <rejectedACKCode>AR</rejectedACKCode>
+                <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+                <msh15ACKAccept>false</msh15ACKAccept>
+                <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+              </responseGenerationProperties>
+              <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+                <successfulACKCode>AA,CA</successfulACKCode>
+                <errorACKCode>AE,CE</errorACKCode>
+                <rejectedACKCode>AR,CR</rejectedACKCode>
+                <validateMessageControlId>true</validateMessageControlId>
+                <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+                <originalIdMapVariable></originalIdMapVariable>
+              </responseValidationProperties>
+            </outboundProperties>
+          </transformer>
+          <responseTransformer version="4.1.1">
+            <elements/>
+            <inboundDataType>HL7V2</inboundDataType>
+            <outboundDataType>HL7V2</outboundDataType>
+            <inboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+              <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+                <handleRepetitions>true</handleRepetitions>
+                <handleSubcomponents>true</handleSubcomponents>
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <stripNamespaces>false</stripNamespaces>
+                <segmentDelimiter>\r</segmentDelimiter>
+                <convertLineBreaks>true</convertLineBreaks>
+              </serializationProperties>
+              <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <segmentDelimiter>\r</segmentDelimiter>
+              </deserializationProperties>
+              <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+                <splitType>MSH_Segment</splitType>
+                <batchScript></batchScript>
+              </batchProperties>
+              <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+                <segmentDelimiter>\r</segmentDelimiter>
+                <successfulACKCode>AA</successfulACKCode>
+                <successfulACKMessage></successfulACKMessage>
+                <errorACKCode>AE</errorACKCode>
+                <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+                <rejectedACKCode>AR</rejectedACKCode>
+                <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+                <msh15ACKAccept>false</msh15ACKAccept>
+                <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+              </responseGenerationProperties>
+              <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+                <successfulACKCode>AA,CA</successfulACKCode>
+                <errorACKCode>AE,CE</errorACKCode>
+                <rejectedACKCode>AR,CR</rejectedACKCode>
+                <validateMessageControlId>true</validateMessageControlId>
+                <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+                <originalIdMapVariable></originalIdMapVariable>
+              </responseValidationProperties>
+            </inboundProperties>
+            <outboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+              <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+                <handleRepetitions>true</handleRepetitions>
+                <handleSubcomponents>true</handleSubcomponents>
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <stripNamespaces>false</stripNamespaces>
+                <segmentDelimiter>\r</segmentDelimiter>
+                <convertLineBreaks>true</convertLineBreaks>
+              </serializationProperties>
+              <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <segmentDelimiter>\r</segmentDelimiter>
+              </deserializationProperties>
+              <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+                <splitType>MSH_Segment</splitType>
+                <batchScript></batchScript>
+              </batchProperties>
+              <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+                <segmentDelimiter>\r</segmentDelimiter>
+                <successfulACKCode>AA</successfulACKCode>
+                <successfulACKMessage></successfulACKMessage>
+                <errorACKCode>AE</errorACKCode>
+                <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+                <rejectedACKCode>AR</rejectedACKCode>
+                <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+                <msh15ACKAccept>false</msh15ACKAccept>
+                <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+              </responseGenerationProperties>
+              <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+                <successfulACKCode>AA,CA</successfulACKCode>
+                <errorACKCode>AE,CE</errorACKCode>
+                <rejectedACKCode>AR,CR</rejectedACKCode>
+                <validateMessageControlId>true</validateMessageControlId>
+                <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+                <originalIdMapVariable></originalIdMapVariable>
+              </responseValidationProperties>
+            </outboundProperties>
+          </responseTransformer>
+          <filter version="4.1.1">
+            <elements/>
+          </filter>
+          <transportName>File Writer</transportName>
+          <mode>DESTINATION</mode>
+          <enabled>true</enabled>
+          <waitForPrevious>true</waitForPrevious>
+        </connector>
+      </destinationConnectors>
+      <preprocessingScript>// Modify the message variable below to pre process data
+return message;</preprocessingScript>
+      <postprocessingScript>// This script executes once after a message has been processed
+// Responses returned from here will be stored as &quot;Postprocessor&quot; in the response map
+return;</postprocessingScript>
+      <deployScript>// This script executes once when the channel is deployed
+// You only have access to the globalMap and globalChannelMap here to persist data
+return;</deployScript>
+      <undeployScript>// This script executes once when the channel is undeployed
+// You only have access to the globalMap and globalChannelMap here to persist data
+return;</undeployScript>
+      <properties version="4.1.1">
+        <clearGlobalChannelMap>true</clearGlobalChannelMap>
+        <messageStorageMode>DEVELOPMENT</messageStorageMode>
+        <encryptData>false</encryptData>
+        <removeContentOnCompletion>false</removeContentOnCompletion>
+        <removeOnlyFilteredOnCompletion>false</removeOnlyFilteredOnCompletion>
+        <removeAttachmentsOnCompletion>false</removeAttachmentsOnCompletion>
+        <initialState>STARTED</initialState>
+        <storeAttachments>true</storeAttachments>
+        <metaDataColumns>
+          <metaDataColumn>
+            <name>SOURCE</name>
+            <type>STRING</type>
+            <mappingName>mirth_source</mappingName>
+          </metaDataColumn>
+          <metaDataColumn>
+            <name>TYPE</name>
+            <type>STRING</type>
+            <mappingName>mirth_type</mappingName>
+          </metaDataColumn>
+        </metaDataColumns>
+        <attachmentProperties version="4.1.1">
+          <type>None</type>
+          <properties/>
+        </attachmentProperties>
+        <resourceIds class="linked-hash-map">
+          <entry>
+            <string>Default Resource</string>
+            <string>[Default Resource]</string>
+          </entry>
+        </resourceIds>
+      </properties>
+      <exportData>
+        <metadata>
+          <enabled>true</enabled>
+          <lastModified>
+            <time>1667345747330</time>
+            <timezone>America/Chicago</timezone>
+          </lastModified>
+          <pruningSettings>
+            <archiveEnabled>true</archiveEnabled>
+            <pruneErroredMessages>false</pruneErroredMessages>
+          </pruningSettings>
+        </metadata>
+        <codeTemplateLibraries>
+          <codeTemplateLibrary version="4.1.1">
+            <id>abe11487-0644-4f0b-9be2-7dd57c82320f</id>
+            <name>Library 1</name>
+            <revision>2</revision>
+            <lastModified>
+              <time>1667346419721</time>
+              <timezone>America/Chicago</timezone>
+            </lastModified>
+            <description></description>
+            <includeNewChannels>false</includeNewChannels>
+            <enabledChannelIds>
+              <string>57ebab22-1f99-4547-9a10-0b2f053f6a7e</string>
+            </enabledChannelIds>
+            <disabledChannelIds>
+              <string>1c87c921-b425-443d-af28-093b670eeeac</string>
+            </disabledChannelIds>
+            <codeTemplates>
+              <codeTemplate version="4.1.1">
+                <id>6c4c8d21-e752-48cb-aaa6-b7690f68d57e</id>
+                <name>cleanphone</name>
+                <revision>5</revision>
+                <lastModified>
+                  <time>1667346310128</time>
+                  <timezone>America/Chicago</timezone>
+                </lastModified>
+                <contextSet>
+                  <delegate>
+                    <contextType>DESTINATION_DISPATCHER</contextType>
+                    <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
+                    <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+                    <contextType>SOURCE_RECEIVER</contextType>
+                    <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
+                  </delegate>
+                </contextSet>
+                <properties class="com.mirth.connect.model.codetemplates.BasicCodeTemplateProperties">
+                  <type>FUNCTION</type>
+                  <code>/**
+	Modify the description here. Modify the function name and parameters as needed. One function per
+	template is recommended; create a new code template for each new function.
+
+	@param {String} arg1 - arg1 description
+	@return {String} return description
+*/
+function cleanphone(arg1) {
+	var newnum=arg1.replace(/-/g,&quot;&quot;);
+	return newnum;
+	// TODO: Enter code here
+	
+}</code>
+                </properties>
+              </codeTemplate>
+            </codeTemplates>
+          </codeTemplateLibrary>
+        </codeTemplateLibraries>
+      </exportData>
+    </channel>
+    <channel version="4.1.1">
+      <id>1c87c921-b425-443d-af28-093b670eeeac</id>
+      <nextMetaDataId>2</nextMetaDataId>
+      <name>Reading Flat file</name>
+      <description></description>
+      <revision>42</revision>
+      <sourceConnector version="4.1.1">
+        <metaDataId>0</metaDataId>
+        <name>sourceConnector</name>
+        <properties class="com.mirth.connect.connectors.file.FileReceiverProperties" version="4.1.1">
+          <pluginProperties/>
+          <pollConnectorProperties version="4.1.1">
+            <pollingType>INTERVAL</pollingType>
+            <pollOnStart>false</pollOnStart>
+            <pollingFrequency>5000</pollingFrequency>
+            <pollingHour>0</pollingHour>
+            <pollingMinute>0</pollingMinute>
+            <cronJobs/>
+            <pollConnectorPropertiesAdvanced>
+              <weekly>true</weekly>
+              <inactiveDays>
+                <boolean>false</boolean>
+                <boolean>false</boolean>
+                <boolean>false</boolean>
+                <boolean>false</boolean>
+                <boolean>false</boolean>
+                <boolean>false</boolean>
+                <boolean>false</boolean>
+                <boolean>false</boolean>
+              </inactiveDays>
+              <dayOfMonth>1</dayOfMonth>
+              <allDay>true</allDay>
+              <startingHour>8</startingHour>
+              <startingMinute>0</startingMinute>
+              <endingHour>17</endingHour>
+              <endingMinute>0</endingMinute>
+            </pollConnectorPropertiesAdvanced>
+          </pollConnectorProperties>
+          <sourceConnectorProperties version="4.1.1">
+            <responseVariable>None</responseVariable>
+            <respondAfterProcessing>true</respondAfterProcessing>
+            <processBatch>true</processBatch>
+            <firstResponse>false</firstResponse>
+            <processingThreads>1</processingThreads>
+            <resourceIds class="linked-hash-map">
+              <entry>
+                <string>Default Resource</string>
+                <string>[Default Resource]</string>
+              </entry>
+            </resourceIds>
+            <queueBufferSize>1000</queueBufferSize>
+          </sourceConnectorProperties>
+          <scheme>FILE</scheme>
+          <host>C:/mirth assesement/Inbound/</host>
+          <fileFilter>*</fileFilter>
+          <regex>false</regex>
+          <directoryRecursion>false</directoryRecursion>
+          <ignoreDot>true</ignoreDot>
+          <anonymous>true</anonymous>
+          <username>anonymous</username>
+          <password>anonymous</password>
+          <timeout>10000</timeout>
+          <secure>true</secure>
+          <passive>true</passive>
+          <validateConnection>true</validateConnection>
+          <afterProcessingAction>MOVE</afterProcessingAction>
+          <moveToDirectory>C:/mirth assesement/Processed</moveToDirectory>
+          <moveToFileName>${channelName}_${originalFilename}</moveToFileName>
+          <errorReadingAction>MOVE</errorReadingAction>
+          <errorResponseAction>AFTER_PROCESSING</errorResponseAction>
+          <errorMoveToDirectory>C:/mirth assesement/Errored</errorMoveToDirectory>
+          <errorMoveToFileName>${originalFilename}</errorMoveToFileName>
+          <checkFileAge>true</checkFileAge>
+          <fileAge>1000</fileAge>
+          <fileSizeMinimum>0</fileSizeMinimum>
+          <fileSizeMaximum></fileSizeMaximum>
+          <ignoreFileSizeMaximum>true</ignoreFileSizeMaximum>
+          <sortBy>date</sortBy>
+          <binary>false</binary>
+          <charsetEncoding>DEFAULT_ENCODING</charsetEncoding>
+        </properties>
+        <transformer version="4.1.1">
+          <elements>
+            <com.mirth.connect.plugins.javascriptstep.JavaScriptStep version="4.1.1">
+              <name>Creating MSH Segment</name>
+              <sequenceNumber>0</sequenceNumber>
+              <enabled>true</enabled>
+              <script>//Creating Message Header Segment MSH
+
+tmp[&apos;MSH&apos;][&apos;MSH.3&apos;][&apos;MSH.3.1&apos;]=msg[&apos;row&apos;][0][&apos;SendingApplicationName&apos;].toString();
+tmp[&apos;MSH&apos;][&apos;MSH.4&apos;][&apos;MSH.4.1&apos;]=msg[&apos;row&apos;][0][&apos;SendingAbbr&apos;].toString();
+tmp[&apos;MSH&apos;][&apos;MSH.5&apos;][&apos;MSH.5.1&apos;]=msg[&apos;row&apos;][0][&apos;RecevingSystem&apos;].toString();
+tmp[&apos;MSH&apos;][&apos;MSH.6&apos;][&apos;MSH.6.1&apos;]=msg[&apos;row&apos;][0][&apos;RecevingSystem&apos;].toString();
+//Getting current date time 
+var dateString = DateUtil.getCurrentDate(&apos;yyyyMMddhhmm&apos;);
+tmp[&apos;MSH&apos;][&apos;MSH.7&apos;][&apos;MSH.7.1&apos;]=dateString;
+
+//Generating Message Type based on Type column in CSV
+/*Logic is 
+Type=New then trigger even A04 will be used indicating new patient registration happened
+Type=Admit then Trigger event A01 will be used indicating patient was admitted to the hospital.
+Type=Exisiting  then Trigger event A08 will be used indicating update*/
+
+switch (msg[&apos;row&apos;][0][&apos;Type&apos;].toString()){
+	case &quot;New&quot;:
+			tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.1&apos;]=&apos;ADT&apos;;
+			tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.2&apos;]=&apos;A04&apos;;
+			break;
+	case &quot;Admit&quot;:
+			tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.1&apos;]=&apos;ADT&apos;;
+			tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.2&apos;]=&apos;A01&apos;;
+			break;
+	case &quot;Existing&quot;:
+			tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.1&apos;]=&apos;ADT&apos;;
+			tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.2&apos;]=&apos;A08&apos;;
+			break;
+}
+if (msg[&apos;row&apos;][0][&apos;Type&apos;].toString()==&apos;&apos;){
+	tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.1&apos;]=&apos;&apos;;
+			tmp[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.2&apos;]=&apos;&apos;;
+}
+else {
+	
+}
+//Generating Message Controlid by concatenating current datetime with data in extenal MRN column from csv
+
+var uniqureid=DateUtil.getCurrentDate(&apos;yyyyMMddhhmmss&apos;)+msg[&apos;row&apos;][0][&apos;ExternalMRN&apos;].toString();
+tmp[&apos;MSH&apos;][&apos;MSH.10&apos;][&apos;MSH.10.1&apos;]=uniqureid;
+tmp[&apos;MSH&apos;][&apos;MSH.11&apos;][&apos;MSH.11.1&apos;]=&apos;T&apos;;
+tmp[&apos;MSH&apos;][&apos;MSH.12&apos;][&apos;MSH.12.1&apos;]=&apos;2.3.1&apos;;</script>
+            </com.mirth.connect.plugins.javascriptstep.JavaScriptStep>
+            <com.mirth.connect.plugins.javascriptstep.JavaScriptStep version="4.1.1">
+              <name>Creating PID Segment</name>
+              <sequenceNumber>1</sequenceNumber>
+              <enabled>true</enabled>
+              <script>//This is creating the PID segment from the CSV file read
+
+
+logger.info(&apos;row length&apos;+ msg[&apos;row&apos;].length());
+
+tmp[&apos;PID&apos;][&apos;PID.1&apos;]==&apos;1&apos;;
+tmp[&apos;PID&apos;][&apos;PID.3&apos;][0][&apos;PID.3.1&apos;]= msg[&apos;row&apos;][&apos;ExternalMRN&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.4&apos;][&apos;PID.4.1&apos;]=msg[&apos;row&apos;][&apos;ExternalMRN&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.1&apos;]=msg[&apos;row&apos;][&apos;PatientLName&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.2&apos;]=msg[&apos;row&apos;][&apos;PatientFName&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.3&apos;]=msg[&apos;row&apos;][0][&apos;PatientMName&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.5&apos;][&apos;PID.5.4&apos;]=&apos;&apos;;
+tmp[&apos;PID&apos;][&apos;PID.7&apos;][&apos;PID.7.1&apos;]=msg[&apos;row&apos;][&apos;PDOB&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.8&apos;][&apos;PID.8.1&apos;]=msg[&apos;row&apos;][&apos;Sex&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.10&apos;][&apos;PID.10.1&apos;]=msg[&apos;row&apos;][&apos;PRace&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.1&apos;]=msg[&apos;row&apos;][&apos;Address1&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.2&apos;]=msg[&apos;row&apos;][&apos;Address2&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.3&apos;]=msg[&apos;row&apos;][0][&apos;City&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.4&apos;]=msg[&apos;row&apos;][0][&apos;State&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.11&apos;][&apos;PID.11.5&apos;]=msg[&apos;row&apos;][0][&apos;Zip&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.13&apos;][&apos;PID.13.1&apos;]=msg[&apos;row&apos;][&apos;ContactNumber&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.16&apos;][&apos;PID.16.1&apos;]=msg[&apos;row&apos;][0][&apos;MaritalStatus&apos;].toString();
+tmp[&apos;PID&apos;][&apos;PID.18&apos;][&apos;PID.18.1&apos;]=msg[&apos;row&apos;][0][&apos;AcccountNumber&apos;].toString();
+
+//channelMap.put(&apos;hl7output&apos;,tmp.tostring());
+//logger.info(tmp.toString());msg[&apos;row&apos;][1][&apos;PatientMName&apos;].toString()</script>
+            </com.mirth.connect.plugins.javascriptstep.JavaScriptStep>
+            <com.mirth.connect.plugins.javascriptstep.JavaScriptStep version="4.1.1">
+              <name>Creating PV1 Segment</name>
+              <sequenceNumber>2</sequenceNumber>
+              <enabled>true</enabled>
+              <script>//Mapping CSV columns to Hl7 fields to create PAtient Visit informaion
+
+tmp[&apos;PV1&apos;][&apos;PV1.2&apos;][&apos;PV1.2.1&apos;]=msg[&apos;row&apos;][0][&apos;PatientClass&apos;].toString();
+tmp[&apos;PV1&apos;][&apos;PV1.7&apos;][&apos;PV1.7.1&apos;]=msg[&apos;row&apos;][0][&apos;AttendingProviderNPI&apos;].toString();
+tmp[&apos;PV1&apos;][&apos;PV1.7&apos;][&apos;PV1.7.2&apos;]=msg[&apos;row&apos;][0][&apos;AttendingProviderLname&apos;].toString();
+tmp[&apos;PV1&apos;][&apos;PV1.7&apos;][&apos;PV1.7.3&apos;]=msg[&apos;row&apos;][0][&apos;AttendingProviderFname&apos;].toString();
+tmp[&apos;PV1&apos;][&apos;PV1.7&apos;][&apos;PV1.7.4&apos;]=&apos;&apos;;
+tmp[&apos;PV1&apos;][&apos;PV1.10&apos;][&apos;PV1.10.1&apos;]=&apos;&apos;;
+tmp[&apos;PV1&apos;][&apos;PV1.14&apos;][&apos;PV1.14.1&apos;]=msg[&apos;row&apos;][0][&apos;Type&apos;].toString();
+tmp[&apos;PV1&apos;][&apos;PV1.15&apos;][&apos;PV1.15.1&apos;]=&apos;&apos;;</script>
+            </com.mirth.connect.plugins.javascriptstep.JavaScriptStep>
+            <com.mirth.connect.plugins.javascriptstep.JavaScriptStep version="4.1.1">
+              <name>Adding Z segment to send channnel name</name>
+              <sequenceNumber>3</sequenceNumber>
+              <enabled>true</enabled>
+              <script>tmp[&apos;ZIL&apos;][&apos;ZIL.5&apos;][&apos;ZIL.5.1&apos;]=channelName;</script>
+            </com.mirth.connect.plugins.javascriptstep.JavaScriptStep>
+          </elements>
+          <inboundTemplate encoding="base64">UGF0aWVudElEfFBhdGllbnRJbGlzdHxFeHRlcm5hbE1STnxQYXRpZW50TE5hbWV8UGF0aWVudE1OYW1lfFBhdGllbnRGTmFtZXxQRE9CfFNleHxQUmFjZXxBZGRyZXNzMXxBZGRyZXNzMnxDaXR5fFN0YXRlfFppcHxDb250YWN0TnVtYmVyfE1hcml0YWxTdGF0dXN8QWNjY291bnROdW1iZXJ8U2VuZGluZ0FwcGxpY2F0aW9uTmFtZXxTZW5kaW5nQWJicnxSZWNldmluZ1N5c3RlbXxUeXBlfFBhdGllbnRDbGFzc3xBdHRlbmRpbmdQcm92aWRlckxuYW1lfEF0dGVuZGluZ1Byb3ZpZGVyRm5hbWV8QXR0ZW5kaW5nUHJvdmlkZXJOUEl8VmlzaXROdW1iZXJ8QWRtaXREYXRlVGltZXxEaXNjaGFyZ2VEYXRlVGltZQ0KMXwxfDJ8QmlzaHR8fFJha2VzaHwwNS8xOS8xOTg5fE1hbGV8QXNpYW58NzYzMSBNY2tpbm5leSBIaWxsc3x8U2FuQW50b25pb3xUWHw3ODI1NHw0MjQtMzQ1LTQzMzJ8TWFycmllZHwxMjM0NTY3OHxlQ0xpbmljYWx3b3Jrc3xlY3d8RXBpY3xOZXd8T3V0cHRpZW50fHRlc3R8dGVzdDF8MTIzNDU2Nzg5MHxWMzQ1Njd8fA0KMnwyfDV8VmFyZ2hlc2V8TmFuZGFufE51bmNpb3wwNi8xMi8xOTkwfE1hbGV8Q2F1Y2FzaWFufE5ld1lvcmt8TmV3SmVyc2V5fEVkaXNpb258Tkp8MDg4MDF8NDI0MzQ1NDMzMnxTaW5nbGV8NDU2Nzg4OHxlQ0xpbmljYWx3b3Jrc3xlY3d8RXBpY3xBZG1pdHxJbnBhdGllbnR8dGVzdHx0ZXN0MXwxMjM0NTY3ODkwfFY1NTU1fDExLzEvMjAyMXwxMS8yMC8yMDIxDQozfDM0fDIyfFRlc3R8fFRlc3R8MDgvMjEvMTk4OXxGZW1hbGV8fExhbmUxfHxNdW1iYWl8Tll8MDg4ODh8NDI0LTM0NS00MzMyfERpdm9yY2VkfDQzNTM0NDZkZGZ8ZUNMaW5pY2Fsd29ya3N8ZWN3fEVwaWN8RXhpc3Rpbmd8T3V0cGF0aWVudHx0ZXN0fHRlc3QxfDEyMzQ1Njc4OTB8VjU2ODg4fHwNCjR8MzN8NDV8VGVzdHx8VGVzdDF8MDYvMjEvMTk4OXxVbmtub3dufEhpc3BhbmljfExhbmUyfHxUdWxzYXxPSHwxMjM0NTZ8NDI0LTM0NS00MzMyfHwxMjQ1Njc4ODRnfGVDTGluaWNhbHdvcmtzfGVjd3xFcGljfHxJbnBhdGllbnR8fHx8fHwNCjV8MTJ8Nzh8VGVzdHx8VGVzdDJ8MDgvMjEvMTk4OXxGZW1hbGV8SGlzcGFuaWN8bGFuZTR8TGFuZTN8RGFsbGFzfFRYfDEyMzQ1fDQyNC0zNDUtNDMzMnxNYXJyaWVkfDY3NzM0OHxlQ0xpbmljYWx3b3Jrc3xlY3d8RXBpY3xOZXd8SW5wYXRpZW50fHRlc3R8dGVzdDF8MTIzNDU2Nzg5MHxWNTY4OTh8fA0K</inboundTemplate>
+          <outboundTemplate encoding="base64">TVNIfF5+XCZ8QURUMXxNQ018RklOR0VSfE1DTXwxOTg4MDgxODExMjZ8U0VDVVJJVFl8QURUXkEwMXxNU0cwMDAwMXxQfDIuMy4xClBJRHwxfHxQQVRJRDEyMzReNV5NMTFeQURUMV5NUl5NQ01+MTIzNDU2Nzg5Xl5eVVNTU0FeU1N8fFNNSVRIXldJTExJQU1eQV5JSUl8fDE5NjEwNjE1fE18fEN8MTIwMCBOIEVMTSBTVFJFRVReXkpFUlVTQUxFTV5UTl45OTk5OT8xMDIwfEdMfCg5OTkpOTk5PzEyMTJ8KDk5OSk5OTk/MzMzM3x8U3x8UEFUSUQxMjM0NTAwMV4yXk0xMF5BRFQxXkFOXkF8MTIzNDU2Nzg5fDk4NzY1NF5OQwpQVjF8MXxJfDIwMDBeMjAxMl4wMXx8fHwwMDQ3NzdeQ0FTVFJPXkZSQU5LXkoufHx8U1VSfHx8fEFETXxBMApaSUx8MXx8fHw=</outboundTemplate>
+          <inboundDataType>DELIMITED</inboundDataType>
+          <outboundDataType>HL7V2</outboundDataType>
+          <inboundProperties class="com.mirth.connect.plugins.datatypes.delimited.DelimitedDataTypeProperties" version="4.1.1">
+            <serializationProperties class="com.mirth.connect.plugins.datatypes.delimited.DelimitedSerializationProperties" version="4.1.1">
+              <columnDelimiter>|</columnDelimiter>
+              <recordDelimiter>\n</recordDelimiter>
+              <quoteToken>&quot;</quoteToken>
+              <escapeWithDoubleQuote>true</escapeWithDoubleQuote>
+              <quoteEscapeToken>\</quoteEscapeToken>
+              <columnNames>
+                <string>PatientID</string>
+                <string>PatientIlist</string>
+                <string>ExternalMRN</string>
+                <string>PatientLName</string>
+                <string>PatientMName</string>
+                <string>PatientFName</string>
+                <string>PDOB</string>
+                <string>Sex</string>
+                <string>PRace</string>
+                <string>Address1</string>
+                <string>Address2</string>
+                <string>City</string>
+                <string>State</string>
+                <string>Zip</string>
+                <string>ContactNumber</string>
+                <string>MaritalStatus</string>
+                <string>AcccountNumber</string>
+                <string>SendingApplicationName</string>
+                <string>SendingAbbr</string>
+                <string>RecevingSystem</string>
+                <string>Type</string>
+                <string>PatientClass</string>
+                <string>AttendingProviderLname</string>
+                <string>AttendingProviderFname</string>
+                <string>AttendingProviderNPI</string>
+                <string>VisitNumber</string>
+                <string>AdmitDateTime</string>
+                <string>DischargeDateTime</string>
+              </columnNames>
+              <numberedRows>false</numberedRows>
+              <ignoreCR>true</ignoreCR>
+            </serializationProperties>
+            <deserializationProperties class="com.mirth.connect.plugins.datatypes.delimited.DelimitedDeserializationProperties" version="4.1.1">
+              <columnDelimiter>,</columnDelimiter>
+              <recordDelimiter>\n</recordDelimiter>
+              <quoteToken>&quot;</quoteToken>
+              <escapeWithDoubleQuote>true</escapeWithDoubleQuote>
+              <quoteEscapeToken>\</quoteEscapeToken>
+            </deserializationProperties>
+            <batchProperties class="com.mirth.connect.plugins.datatypes.delimited.DelimitedBatchProperties" version="4.1.1">
+              <splitType>Record</splitType>
+              <batchSkipRecords>1</batchSkipRecords>
+              <batchMessageDelimiter></batchMessageDelimiter>
+              <batchMessageDelimiterIncluded>false</batchMessageDelimiterIncluded>
+              <batchGroupingColumn></batchGroupingColumn>
+              <batchScript></batchScript>
+            </batchProperties>
+          </inboundProperties>
+          <outboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+            <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+              <handleRepetitions>true</handleRepetitions>
+              <handleSubcomponents>true</handleSubcomponents>
+              <useStrictParser>false</useStrictParser>
+              <useStrictValidation>false</useStrictValidation>
+              <stripNamespaces>false</stripNamespaces>
+              <segmentDelimiter>\r</segmentDelimiter>
+              <convertLineBreaks>true</convertLineBreaks>
+            </serializationProperties>
+            <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+              <useStrictParser>false</useStrictParser>
+              <useStrictValidation>false</useStrictValidation>
+              <segmentDelimiter>\r</segmentDelimiter>
+            </deserializationProperties>
+            <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+              <splitType>MSH_Segment</splitType>
+              <batchScript></batchScript>
+            </batchProperties>
+            <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+              <segmentDelimiter>\r</segmentDelimiter>
+              <successfulACKCode>AA</successfulACKCode>
+              <successfulACKMessage></successfulACKMessage>
+              <errorACKCode>AE</errorACKCode>
+              <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+              <rejectedACKCode>AR</rejectedACKCode>
+              <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+              <msh15ACKAccept>false</msh15ACKAccept>
+              <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+            </responseGenerationProperties>
+            <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+              <successfulACKCode>AA,CA</successfulACKCode>
+              <errorACKCode>AE,CE</errorACKCode>
+              <rejectedACKCode>AR,CR</rejectedACKCode>
+              <validateMessageControlId>true</validateMessageControlId>
+              <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+              <originalIdMapVariable></originalIdMapVariable>
+            </responseValidationProperties>
+          </outboundProperties>
+        </transformer>
+        <filter version="4.1.1">
+          <elements/>
+        </filter>
+        <transportName>File Reader</transportName>
+        <mode>SOURCE</mode>
+        <enabled>true</enabled>
+        <waitForPrevious>true</waitForPrevious>
+      </sourceConnector>
+      <destinationConnectors>
+        <connector version="4.1.1">
+          <metaDataId>1</metaDataId>
+          <name>Destination 1</name>
+          <properties class="com.mirth.connect.connectors.vm.VmDispatcherProperties" version="4.1.1">
+            <pluginProperties/>
+            <destinationConnectorProperties version="4.1.1">
+              <queueEnabled>true</queueEnabled>
+              <sendFirst>true</sendFirst>
+              <retryIntervalMillis>10000</retryIntervalMillis>
+              <regenerateTemplate>false</regenerateTemplate>
+              <retryCount>0</retryCount>
+              <rotate>false</rotate>
+              <includeFilterTransformer>false</includeFilterTransformer>
+              <threadCount>1</threadCount>
+              <threadAssignmentVariable></threadAssignmentVariable>
+              <validateResponse>true</validateResponse>
+              <resourceIds class="linked-hash-map">
+                <entry>
+                  <string>Default Resource</string>
+                  <string>[Default Resource]</string>
+                </entry>
+              </resourceIds>
+              <queueBufferSize>1000</queueBufferSize>
+              <reattachAttachments>true</reattachAttachments>
+            </destinationConnectorProperties>
+            <channelId>57ebab22-1f99-4547-9a10-0b2f053f6a7e</channelId>
+            <channelTemplate>${message.encodedData}
+</channelTemplate>
+            <mapVariables/>
+          </properties>
+          <transformer version="4.1.1">
+            <elements/>
+            <inboundTemplate encoding="base64"></inboundTemplate>
+            <outboundTemplate encoding="base64"></outboundTemplate>
+            <inboundDataType>HL7V2</inboundDataType>
+            <outboundDataType>HL7V2</outboundDataType>
+            <inboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+              <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+                <handleRepetitions>true</handleRepetitions>
+                <handleSubcomponents>true</handleSubcomponents>
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <stripNamespaces>false</stripNamespaces>
+                <segmentDelimiter>\r</segmentDelimiter>
+                <convertLineBreaks>true</convertLineBreaks>
+              </serializationProperties>
+              <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <segmentDelimiter>\r</segmentDelimiter>
+              </deserializationProperties>
+              <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+                <splitType>MSH_Segment</splitType>
+                <batchScript></batchScript>
+              </batchProperties>
+              <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+                <segmentDelimiter>\r</segmentDelimiter>
+                <successfulACKCode>AA</successfulACKCode>
+                <successfulACKMessage></successfulACKMessage>
+                <errorACKCode>AE</errorACKCode>
+                <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+                <rejectedACKCode>AR</rejectedACKCode>
+                <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+                <msh15ACKAccept>false</msh15ACKAccept>
+                <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+              </responseGenerationProperties>
+              <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+                <successfulACKCode>AA,CA</successfulACKCode>
+                <errorACKCode>AE,CE</errorACKCode>
+                <rejectedACKCode>AR,CR</rejectedACKCode>
+                <validateMessageControlId>true</validateMessageControlId>
+                <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+                <originalIdMapVariable></originalIdMapVariable>
+              </responseValidationProperties>
+            </inboundProperties>
+            <outboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+              <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+                <handleRepetitions>true</handleRepetitions>
+                <handleSubcomponents>true</handleSubcomponents>
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <stripNamespaces>false</stripNamespaces>
+                <segmentDelimiter>\r</segmentDelimiter>
+                <convertLineBreaks>true</convertLineBreaks>
+              </serializationProperties>
+              <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <segmentDelimiter>\r</segmentDelimiter>
+              </deserializationProperties>
+              <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+                <splitType>MSH_Segment</splitType>
+                <batchScript></batchScript>
+              </batchProperties>
+              <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+                <segmentDelimiter>\r</segmentDelimiter>
+                <successfulACKCode>AA</successfulACKCode>
+                <successfulACKMessage></successfulACKMessage>
+                <errorACKCode>AE</errorACKCode>
+                <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+                <rejectedACKCode>AR</rejectedACKCode>
+                <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+                <msh15ACKAccept>false</msh15ACKAccept>
+                <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+              </responseGenerationProperties>
+              <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+                <successfulACKCode>AA,CA</successfulACKCode>
+                <errorACKCode>AE,CE</errorACKCode>
+                <rejectedACKCode>AR,CR</rejectedACKCode>
+                <validateMessageControlId>true</validateMessageControlId>
+                <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+                <originalIdMapVariable></originalIdMapVariable>
+              </responseValidationProperties>
+            </outboundProperties>
+          </transformer>
+          <responseTransformer version="4.1.1">
+            <elements/>
+            <inboundDataType>HL7V2</inboundDataType>
+            <outboundDataType>HL7V2</outboundDataType>
+            <inboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+              <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+                <handleRepetitions>true</handleRepetitions>
+                <handleSubcomponents>true</handleSubcomponents>
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <stripNamespaces>false</stripNamespaces>
+                <segmentDelimiter>\r</segmentDelimiter>
+                <convertLineBreaks>true</convertLineBreaks>
+              </serializationProperties>
+              <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <segmentDelimiter>\r</segmentDelimiter>
+              </deserializationProperties>
+              <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+                <splitType>MSH_Segment</splitType>
+                <batchScript></batchScript>
+              </batchProperties>
+              <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+                <segmentDelimiter>\r</segmentDelimiter>
+                <successfulACKCode>AA</successfulACKCode>
+                <successfulACKMessage></successfulACKMessage>
+                <errorACKCode>AE</errorACKCode>
+                <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+                <rejectedACKCode>AR</rejectedACKCode>
+                <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+                <msh15ACKAccept>false</msh15ACKAccept>
+                <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+              </responseGenerationProperties>
+              <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+                <successfulACKCode>AA,CA</successfulACKCode>
+                <errorACKCode>AE,CE</errorACKCode>
+                <rejectedACKCode>AR,CR</rejectedACKCode>
+                <validateMessageControlId>true</validateMessageControlId>
+                <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+                <originalIdMapVariable></originalIdMapVariable>
+              </responseValidationProperties>
+            </inboundProperties>
+            <outboundProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DataTypeProperties" version="4.1.1">
+              <serializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2SerializationProperties" version="4.1.1">
+                <handleRepetitions>true</handleRepetitions>
+                <handleSubcomponents>true</handleSubcomponents>
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <stripNamespaces>false</stripNamespaces>
+                <segmentDelimiter>\r</segmentDelimiter>
+                <convertLineBreaks>true</convertLineBreaks>
+              </serializationProperties>
+              <deserializationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2DeserializationProperties" version="4.1.1">
+                <useStrictParser>false</useStrictParser>
+                <useStrictValidation>false</useStrictValidation>
+                <segmentDelimiter>\r</segmentDelimiter>
+              </deserializationProperties>
+              <batchProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2BatchProperties" version="4.1.1">
+                <splitType>MSH_Segment</splitType>
+                <batchScript></batchScript>
+              </batchProperties>
+              <responseGenerationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseGenerationProperties" version="4.1.1">
+                <segmentDelimiter>\r</segmentDelimiter>
+                <successfulACKCode>AA</successfulACKCode>
+                <successfulACKMessage></successfulACKMessage>
+                <errorACKCode>AE</errorACKCode>
+                <errorACKMessage>An Error Occurred Processing Message.</errorACKMessage>
+                <rejectedACKCode>AR</rejectedACKCode>
+                <rejectedACKMessage>Message Rejected.</rejectedACKMessage>
+                <msh15ACKAccept>false</msh15ACKAccept>
+                <dateFormat>yyyyMMddHHmmss.SSS</dateFormat>
+              </responseGenerationProperties>
+              <responseValidationProperties class="com.mirth.connect.plugins.datatypes.hl7v2.HL7v2ResponseValidationProperties" version="4.1.1">
+                <successfulACKCode>AA,CA</successfulACKCode>
+                <errorACKCode>AE,CE</errorACKCode>
+                <rejectedACKCode>AR,CR</rejectedACKCode>
+                <validateMessageControlId>true</validateMessageControlId>
+                <originalMessageControlId>Destination_Encoded</originalMessageControlId>
+                <originalIdMapVariable></originalIdMapVariable>
+              </responseValidationProperties>
+            </outboundProperties>
+          </responseTransformer>
+          <filter version="4.1.1">
+            <elements>
+              <com.mirth.connect.plugins.rulebuilder.RuleBuilderRule version="4.1.1">
+                <name>Accept message if &quot;msg[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.1&apos;].toString()&quot; does not equal &apos;&apos;</name>
+                <sequenceNumber>0</sequenceNumber>
+                <enabled>true</enabled>
+                <field>msg[&apos;MSH&apos;][&apos;MSH.9&apos;][&apos;MSH.9.1&apos;].toString()</field>
+                <condition>NOT_EQUAL</condition>
+                <values>
+                  <string>&apos;&apos;</string>
+                </values>
+              </com.mirth.connect.plugins.rulebuilder.RuleBuilderRule>
+            </elements>
+          </filter>
+          <transportName>Channel Writer</transportName>
+          <mode>DESTINATION</mode>
+          <enabled>true</enabled>
+          <waitForPrevious>true</waitForPrevious>
+        </connector>
+      </destinationConnectors>
+      <preprocessingScript>// Modify the message variable below to pre process data
+return message;</preprocessingScript>
+      <postprocessingScript>// This script executes once after a message has been processed
+// Responses returned from here will be stored as &quot;Postprocessor&quot; in the response map
+return;</postprocessingScript>
+      <deployScript>// This script executes once when the channel is deployed
+// You only have access to the globalMap and globalChannelMap here to persist data
+return;</deployScript>
+      <undeployScript>// This script executes once when the channel is undeployed
+// You only have access to the globalMap and globalChannelMap here to persist data
+return;</undeployScript>
+      <properties version="4.1.1">
+        <clearGlobalChannelMap>true</clearGlobalChannelMap>
+        <messageStorageMode>DEVELOPMENT</messageStorageMode>
+        <encryptData>false</encryptData>
+        <removeContentOnCompletion>false</removeContentOnCompletion>
+        <removeOnlyFilteredOnCompletion>false</removeOnlyFilteredOnCompletion>
+        <removeAttachmentsOnCompletion>false</removeAttachmentsOnCompletion>
+        <initialState>STARTED</initialState>
+        <storeAttachments>true</storeAttachments>
+        <metaDataColumns>
+          <metaDataColumn>
+            <name>SOURCE</name>
+            <type>STRING</type>
+            <mappingName>mirth_source</mappingName>
+          </metaDataColumn>
+          <metaDataColumn>
+            <name>TYPE</name>
+            <type>STRING</type>
+            <mappingName>mirth_type</mappingName>
+          </metaDataColumn>
+        </metaDataColumns>
+        <attachmentProperties version="4.1.1">
+          <type>None</type>
+          <properties/>
+        </attachmentProperties>
+        <resourceIds class="linked-hash-map">
+          <entry>
+            <string>Default Resource</string>
+            <string>[Default Resource]</string>
+          </entry>
+        </resourceIds>
+      </properties>
+      <exportData>
+        <metadata>
+          <enabled>true</enabled>
+          <lastModified>
+            <time>1667328458676</time>
+            <timezone>America/Chicago</timezone>
+          </lastModified>
+          <pruningSettings>
+            <archiveEnabled>true</archiveEnabled>
+            <pruneErroredMessages>false</pruneErroredMessages>
+          </pruningSettings>
+        </metadata>
+        <codeTemplateLibraries/>
+      </exportData>
+    </channel>
+  </channels>
+</channelGroup>

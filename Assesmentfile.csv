@@ -1,0 +1,6 @@
+PatientID|PatientIlist|ExternalMRN|PatientLName|PatientMName|PatientFName|PDOB|Sex|PRace|Address1|Address2|City|State|Zip|ContactNumber|MaritalStatus|AcccountNumber|SendingApplicationName|SendingAbbr|RecevingSystem|Type|PatientClass|AttendingProviderLname|AttendingProviderFname|AttendingProviderNPI|VisitNumber|AdmitDateTime|DischargeDateTime
+1|1|2|Bisht||Rakesh|05/19/1989|Male|Asian|7631 Mckinney Hills||SanAntonio|TX|78254|424-345-4332|Married|12345678|eCLinicalworks|ecw|Epic|New|Outptient|test|test1|1234567890|V34567||
+2|2|5|Varghese|Nandan|Nuncio|06/12/1990|Male|Caucasian|NewYork|NewJersey|Edision|NJ|08801|4243454332|Single|4567888|eCLinicalworks|ecw|Epic|Admit|Inpatient|test|test1|1234567890|V5555|11/1/2021|11/20/2021
+3|34|22|Test||Test|08/21/1989|Female||Lane1||Mumbai|NY|08888|424-345-4332|Divorced|4353446ddf|eCLinicalworks|ecw|Epic|Existing|Outpatient|test|test1|1234567890|V56888||
+4|33|45|Test||Test1|06/21/1989|Unknown|Hispanic|Lane2||Tulsa|OH|123456|424-345-4332||124567884g|eCLinicalworks|ecw|Epic||Inpatient||||||
+5|12|78|Test||Test2|08/21/1989|Female|Hispanic|lane4|Lane3|Dallas|TX|12345|424-345-4332|Married|677348|eCLinicalworks|ecw|Epic|Admit|Inpatient|test|test1|1234567890|V56898||
